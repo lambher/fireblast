@@ -10,13 +10,14 @@ import (
 type Scene struct {
 	Conf     *conf.Conf
 	Elements []models.Element
-	MyPlayer *models.Player
+	Player1  *models.Player
+	Player2  *models.Player
 }
 
 func (s *Scene) Init(conf *conf.Conf) {
 	s.Conf = conf
 	s.Elements = make([]models.Element, 0)
-	s.MyPlayer = models.NewPlayer(models.PlayerConf{
+	s.Player1 = models.NewPlayer(models.PlayerConf{
 		Conf: conf,
 		Name: "Lambert",
 		Position: pixel.Vec{
@@ -25,29 +26,56 @@ func (s *Scene) Init(conf *conf.Conf) {
 		},
 		Color: pixel.RGB(1, 0, 0),
 	})
-	s.Elements = append(s.Elements, s.MyPlayer)
+	s.Player2 = models.NewPlayer(models.PlayerConf{
+		Conf: conf,
+		Name: "Milande",
+		Position: pixel.Vec{
+			X: conf.MaxX / 2,
+			Y: conf.MaxY / 2,
+		},
+		Color: pixel.RGB(0, 1, 0),
+	})
+	s.Elements = append(s.Elements, s.Player1)
+	s.Elements = append(s.Elements, s.Player2)
 }
 
 func (s *Scene) CatchEvent(win *pixelgl.Window) {
-	if win.JustPressed(pixelgl.MouseButtonLeft) {
+	if win.Pressed(pixelgl.KeyA) {
+		s.Player1.Rotate(0.05)
 	}
 
 	if win.Pressed(pixelgl.KeyD) {
-		s.MyPlayer.Rotate(-0.05)
-	}
-	if win.Pressed(pixelgl.KeyA) {
-		s.MyPlayer.Rotate(0.05)
+		s.Player1.Rotate(-0.05)
 	}
 
 	if win.JustPressed(pixelgl.KeyLeftShift) {
-		s.MyPlayer.Gaz(true)
+		s.Player1.Gaz(true)
 	}
 	if win.JustReleased(pixelgl.KeyLeftShift) {
-		s.MyPlayer.Gaz(false)
+		s.Player1.Gaz(false)
 	}
 
 	if win.JustPressed(pixelgl.KeySpace) {
-		bullet := s.MyPlayer.Shoot()
+		bullet := s.Player1.Shoot()
+		s.AddBullet(bullet)
+	}
+
+	if win.Pressed(pixelgl.KeyLeft) {
+		s.Player2.Rotate(0.05)
+	}
+	if win.Pressed(pixelgl.KeyRight) {
+		s.Player2.Rotate(-0.05)
+	}
+
+	if win.JustPressed(pixelgl.KeyRightControl) {
+		s.Player2.Gaz(true)
+	}
+	if win.JustReleased(pixelgl.KeyRightControl) {
+		s.Player2.Gaz(false)
+	}
+
+	if win.JustPressed(pixelgl.KeyKPEnter) {
+		bullet := s.Player2.Shoot()
 		s.AddBullet(bullet)
 	}
 }

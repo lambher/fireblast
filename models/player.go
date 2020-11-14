@@ -11,6 +11,7 @@ type Player struct {
 
 	Name     string
 	HP       int
+	GazTank  float64
 	Position *Coordinate
 	Color    pixel.RGBA
 
@@ -31,6 +32,7 @@ func NewPlayer(conf PlayerConf) *Player {
 		Conf:     conf.Conf,
 		Name:     conf.Name,
 		HP:       100,
+		GazTank:  1,
 		Position: NewCoordinate(conf.Position),
 		Color:    conf.Color,
 	}
@@ -45,8 +47,14 @@ func (p Player) Draw(win *pixelgl.Window) {
 }
 
 func (p *Player) Update() {
-	if p.gazActive {
+	if p.gazActive && p.GazTank > 0 {
 		p.Shape.Gaz()
+		p.GazTank -= 0.01
+	} else if !p.gazActive && p.GazTank < 1 {
+		p.GazTank += 0.05
+		if p.GazTank > 1 {
+			p.GazTank = 1
+		}
 	}
 	p.Shape.Update()
 }
