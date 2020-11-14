@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/lambher/fireblast/conf"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/lambher/fireblast/scenes"
@@ -15,7 +17,7 @@ func main() {
 }
 
 func run() {
-	var conf scenes.Conf
+	var conf conf.Conf
 
 	err := gonfig.GetConf("./conf.json", &conf)
 	if err != nil {
