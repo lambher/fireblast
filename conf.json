@@ -1,0 +1,7 @@
+{
+  "MaxX": 800,
+  "MaxY": 800,
+  "MinSpeed": 1,
+  "MaxSpeed": 3,
+  "Nb": 100
+}
