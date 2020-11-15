@@ -59,6 +59,18 @@ func (p *Player) Update() {
 	p.Shape.Update()
 }
 
+func (p *Player) Collision(elements []Element) {
+	for _, element := range elements {
+		if element.Collides(p) {
+
+		}
+	}
+}
+
+func (p Player) Collides(element Element) bool {
+	return false
+}
+
 func (p *Player) Shoot() *Bullet {
 	bullet := NewBullet(p.Conf)
 	bullet.Position = NewCoordinate(p.Shape.A.Translation)

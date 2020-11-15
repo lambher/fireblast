@@ -15,7 +15,8 @@ type UI struct {
 	Color      pixel.RGBA
 	basicAtlas *text.Atlas
 	basicTxt   *text.Text
-	Gauge      *Gauge
+	GazGauge   *Gauge
+	HPGauge    *Gauge
 }
 
 func NewUI(player *Player, position pixel.Vec) *UI {
@@ -28,23 +29,32 @@ func NewUI(player *Player, position pixel.Vec) *UI {
 	}
 	textPost := position
 	ui.basicTxt = text.New(textPost, basicAtlas)
-	ui.Gauge = NewGauge(position)
+	ui.GazGauge = NewGauge(position.Add(pixel.Vec{
+		X: 35,
+		Y: -42.5,
+	}))
+	ui.HPGauge = NewGauge(position.Add(pixel.Vec{
+		X: 35,
+		Y: -17.5,
+	}))
 	return &ui
 }
 
 func (u UI) Draw(win *pixelgl.Window) {
 	u.basicTxt.Draw(win, pixel.IM)
-	u.Gauge.Draw(win)
+	u.GazGauge.Draw(win)
+	u.HPGauge.Draw(win)
 }
 
 func (u *UI) Update() {
 	u.basicTxt.Clear()
-	_, err := u.basicTxt.WriteString(fmt.Sprintf("%s\n\nHP: %d\n\nGAZ:", u.Player.Name, u.Player.HP))
+	_, err := u.basicTxt.WriteString(fmt.Sprintf("%s\n\nHP:\n\nGAZ:", u.Player.Name))
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	u.Gauge.Update(u.Player.GazTank)
+	u.GazGauge.Update(u.Player.GazTank)
+	u.HPGauge.Update(float64(u.Player.HP / 100))
 }
 
 func (u UI) IsDestroyed() bool {

@@ -17,13 +17,10 @@ type Gauge struct {
 func NewGauge(position pixel.Vec) *Gauge {
 	var gauge Gauge
 
-	gauge.a = position.Add(pixel.Vec{
-		X: 35,
-		Y: -45,
-	})
+	gauge.a = position
 	gauge.b = position.Add(pixel.Vec{
-		X: 35,
-		Y: -55,
+		X: 0,
+		Y: -10,
 	})
 	gauge.gazColor = pixel.RGB(0, 1, 0)
 

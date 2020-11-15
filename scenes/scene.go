@@ -118,4 +118,6 @@ func (s *Scene) Update() {
 
 	s.UIPlayer1.Update()
 	s.UIPlayer2.Update()
+	s.Player1.Collision(elements)
+	s.Player2.Collision(elements)
 }

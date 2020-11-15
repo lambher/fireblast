@@ -47,6 +47,13 @@ func (b *Bullet) Update() {
 	}
 }
 
+func (p Bullet) Collides(element Element) bool {
+	return false
+}
+
+func (b *Bullet) Collision(elements []Element) {
+}
+
 func (b Bullet) IsDestroyed() bool {
 	return b.destroyed
 }
