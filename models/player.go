@@ -51,7 +51,7 @@ func (p *Player) Update() {
 		p.Shape.Gaz()
 		p.GazTank -= 0.01
 	} else if !p.gazActive && p.GazTank < 1 {
-		p.GazTank += 0.05
+		p.GazTank += 0.005
 		if p.GazTank > 1 {
 			p.GazTank = 1
 		}

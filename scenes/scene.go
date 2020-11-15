@@ -8,10 +8,12 @@ import (
 )
 
 type Scene struct {
-	Conf     *conf.Conf
-	Elements []models.Element
-	Player1  *models.Player
-	Player2  *models.Player
+	Conf      *conf.Conf
+	Elements  []models.Element
+	Player1   *models.Player
+	Player2   *models.Player
+	UIPlayer1 *models.UI
+	UIPlayer2 *models.UI
 }
 
 func (s *Scene) Init(conf *conf.Conf) {
@@ -37,6 +39,16 @@ func (s *Scene) Init(conf *conf.Conf) {
 	})
 	s.Elements = append(s.Elements, s.Player1)
 	s.Elements = append(s.Elements, s.Player2)
+
+	s.UIPlayer1 = models.NewUI(s.Player1, pixel.Vec{
+		X: 1,
+		Y: conf.MaxY - 11,
+	})
+
+	s.UIPlayer2 = models.NewUI(s.Player2, pixel.Vec{
+		X: conf.MaxX - 100,
+		Y: conf.MaxY - 11,
+	})
 }
 
 func (s *Scene) CatchEvent(win *pixelgl.Window) {
@@ -84,6 +96,9 @@ func (s *Scene) Draw(win *pixelgl.Window) {
 	for _, element := range s.Elements {
 		element.Draw(win)
 	}
+
+	s.UIPlayer1.Draw(win)
+	s.UIPlayer2.Draw(win)
 }
 
 func (s *Scene) AddBullet(bullet *models.Bullet) {
@@ -100,4 +115,7 @@ func (s *Scene) Update() {
 		}
 	}
 	s.Elements = elements
+
+	s.UIPlayer1.Update()
+	s.UIPlayer2.Update()
 }
