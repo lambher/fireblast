@@ -9,6 +9,7 @@ import (
 type Player struct {
 	Conf *conf.Conf
 
+	ID       int
 	Name     string
 	HP       int
 	GazTank  float64

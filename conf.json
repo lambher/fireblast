@@ -3,5 +3,6 @@
   "MaxY": 800,
   "MinSpeed": 1,
   "MaxSpeed": 3,
-  "Nb": 100
+  "Nb": 100,
+  "Address": "5.39.93.173:27017"
 }
