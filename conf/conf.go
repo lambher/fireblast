@@ -3,12 +3,9 @@ package conf
 import "time"
 
 type Conf struct {
-	MaxX     float64
-	MaxY     float64
-	MinSpeed float64
-	MaxSpeed float64
-	Nb       int
-	Address  string
+	MaxX    float64
+	MaxY    float64
+	Address string
 }
 
 // maxBufferSize specifies the size of the buffers that

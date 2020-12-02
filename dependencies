@@ -1,9 +1,0 @@
-sudo apt install libx11-dev
-sudo apt install libxcursor-dev
-sudo apt install libxrandr-dev
-sudo apt-get install libxinerama1 libxinerama-dev
-sudo apt install libxi-dev
-sudo apt install mesa-common-dev
-sudo apt install libglu1-mesa-dev freeglut3-dev
-sudo apt install libglfw3-dev libgles2-mesa-dev
-sudo apt install pkg-config

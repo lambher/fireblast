@@ -146,6 +146,7 @@ func client(ctx context.Context, address string, reader io.Reader, input chan st
 				return
 			}
 			allDatas := string(buffer[:nRead])
+			fmt.Printf("data size: %d / %d\n", len(allDatas), conf.MaxBufferSize)
 
 			datas := strings.Split(allDatas, "\n")
 
@@ -193,139 +194,6 @@ func parseData(s *scenes.Scene, data string) {
 	case "PLAYER_2":
 		refreshPlayer(s, s.Player2, data)
 	}
-
-	return
-
-	if strings.HasPrefix(data, "ID") {
-		strs := strings.Split(data, " ")
-		s.ID = strs[1]
-	} else if strings.HasPrefix(data, "NEW_PLAYER") {
-		var playerConf models.PlayerConf
-		playerConf.Position.X = s.Conf.MaxX / 2
-		playerConf.Position.Y = s.Conf.MaxY / 2
-		playerConf.Color = pixel.RGB(0, 1, 0)
-		strs := strings.Split(data, " ")
-		for i, str := range strs {
-			if i == 0 {
-				continue
-			}
-			if i == 1 {
-				playerConf.Name = str
-			}
-		}
-		playerConf.Conf = s.Conf
-		s.AddPlayer2(playerConf)
-		s.AddUIPlayer2()
-	} else if strings.HasPrefix(data, "PLAYER") {
-		nbPlayer := ""
-		var player *models.Player
-
-		strs := strings.Split(data, " ")
-		for i, str := range strs {
-			if i == 0 {
-				ss := strings.Split(str, "_")
-				if len(ss) == 2 {
-					nbPlayer = ss[1]
-					switch nbPlayer {
-					case "1":
-						player = s.Player1
-					case "2":
-						player = s.Player2
-					}
-				}
-			}
-			if i == 1 {
-				switch str {
-				case "GAZ_ON":
-					player.Gaz(true)
-				case "GAZ_OFF":
-					player.Gaz(false)
-				case "LEFT":
-					player.Rotate(.05)
-				case "RIGHT":
-					player.Rotate(-.05)
-				case "SHOOT":
-					bullet := player.Shoot()
-					s.AddBullet(bullet)
-				default:
-					if strings.HasPrefix(str, "DIRECTION_X") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.Direction.X = value
-					} else if strings.HasPrefix(str, "DIRECTION_Y") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.Direction.Y = value
-					} else if strings.HasPrefix(str, "INERTIE_X") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.Inertie.X = value
-					} else if strings.HasPrefix(str, "INERTIE_Y") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.Inertie.Y = value
-					} else if strings.HasPrefix(str, "A_X") {
-						value, err := getFloat(str)
-						if err != nil {
-							fmt.Println(err)
-							continue
-						}
-						player.Shape.A.Translation.X = value
-					} else if strings.HasPrefix(str, "A_Y") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.A.Translation.Y = value
-					} else if strings.HasPrefix(str, "B_X") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.B.Translation.X = value
-					} else if strings.HasPrefix(str, "B_Y") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.B.Translation.Y = value
-					} else if strings.HasPrefix(str, "C_X") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.C.Translation.X = value
-					} else if strings.HasPrefix(str, "C_Y") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.C.Translation.Y = value
-					} else if strings.HasPrefix(str, "G_X") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.G.Translation.X = value
-					} else if strings.HasPrefix(str, "G_Y") {
-						value, err := getFloat(str)
-						if err != nil {
-							continue
-						}
-						player.Shape.G.Translation.Y = value
-					}
-				}
-			}
-		}
-	}
 }
 
 func refreshPlayer(s *scenes.Scene, player *models.Player, data string) {
@@ -344,62 +212,62 @@ func refreshPlayer(s *scenes.Scene, player *models.Player, data string) {
 		bullet := player.Shoot()
 		s.AddBullet(bullet)
 	case "DIRECTION_X":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.Direction.X = value
 		}
 	case "DIRECTION_Y":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.Direction.Y = value
 		}
 	case "INERTIE_X":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.Inertie.X = value
 		}
 	case "INERTIE_Y":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.Inertie.Y = value
 		}
 	case "A_X":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.A.Translation.X = value
 		}
 	case "A_Y":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.A.Translation.Y = value
 		}
 	case "B_X":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.B.Translation.X = value
 		}
 	case "B_Y":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.B.Translation.Y = value
 		}
 	case "C_X":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.C.Translation.X = value
 		}
 	case "C_Y":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.C.Translation.Y = value
 		}
 	case "G_X":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.G.Translation.X = value
 		}
 	case "G_Y":
-		value, err := getFloatAt(str, 2)
+		value, err := getFloatAt(data, 2)
 		if err == nil {
 			player.Shape.G.Translation.Y = value
 		}

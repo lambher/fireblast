@@ -1,8 +1,5 @@
 {
   "MaxX": 800,
   "MaxY": 800,
-  "MinSpeed": 1,
-  "MaxSpeed": 3,
-  "Nb": 100,
-  "Address": "5.39.93.173:27017"
+  "Address": "127.0.0.1:27017"
 }
