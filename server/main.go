@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net"
 	"strconv"
 	"strings"
@@ -64,6 +65,7 @@ func server(ctx context.Context) (err error) {
 	doneChan := make(chan error, 1)
 	//buffer := make([]byte, conf.MaxBufferSize)
 
+	playerID := 1
 	// Given that waiting for packets to arrive is blocking by nature and we want
 	// to be able of canceling such action if desired, we do that in a separate
 	// go routine.
@@ -101,61 +103,22 @@ func server(ctx context.Context) (err error) {
 						select {
 						case <-ticker.C:
 							str := ""
-							str += "PLAYER_1 DIRECTION_X " + fmt.Sprintf("%f\n", s.Player1.Shape.Direction.X)
-							str += "PLAYER_1 DIRECTION_Y " + fmt.Sprintf("%f\n", s.Player1.Shape.Direction.Y)
-							str += "PLAYER_1 INERTIE_X " + fmt.Sprintf("%f\n", s.Player1.Shape.Inertie.X)
-							str += "PLAYER_1 INERTIE_Y " + fmt.Sprintf("%f\n", s.Player1.Shape.Inertie.Y)
-							str += "PLAYER_1 A_X " + fmt.Sprintf("%f\n", s.Player1.Shape.A.Translation.X)
-							str += "PLAYER_1 A_Y " + fmt.Sprintf("%f\n", s.Player1.Shape.A.Translation.Y)
-							str += "PLAYER_1 B_X " + fmt.Sprintf("%f\n", s.Player1.Shape.B.Translation.X)
-							str += "PLAYER_1 B_Y " + fmt.Sprintf("%f\n", s.Player1.Shape.B.Translation.Y)
-							str += "PLAYER_1 C_X " + fmt.Sprintf("%f\n", s.Player1.Shape.C.Translation.X)
-							str += "PLAYER_1 C_Y " + fmt.Sprintf("%f\n", s.Player1.Shape.C.Translation.Y)
-							str += "PLAYER_1 G_X " + fmt.Sprintf("%f\n", s.Player1.Shape.G.Translation.X)
-							str += "PLAYER_1 G_Y " + fmt.Sprintf("%f\n", s.Player1.Shape.G.Translation.Y)
 
-							if s.Player2 != nil {
-								str += "PLAYER_2 DIRECTION_X " + fmt.Sprintf("%f\n", s.Player2.Shape.Direction.X)
-								str += "PLAYER_2 DIRECTION_Y " + fmt.Sprintf("%f\n", s.Player2.Shape.Direction.Y)
-								str += "PLAYER_2 INERTIE_X " + fmt.Sprintf("%f\n", s.Player2.Shape.Inertie.X)
-								str += "PLAYER_2 INERTIE_Y " + fmt.Sprintf("%f\n", s.Player2.Shape.Inertie.Y)
-								str += "PLAYER_2 A_X " + fmt.Sprintf("%f\n", s.Player2.Shape.A.Translation.X)
-								str += "PLAYER_2 A_Y " + fmt.Sprintf("%f\n", s.Player2.Shape.A.Translation.Y)
-								str += "PLAYER_2 B_X " + fmt.Sprintf("%f\n", s.Player2.Shape.B.Translation.X)
-								str += "PLAYER_2 B_Y " + fmt.Sprintf("%f\n", s.Player2.Shape.B.Translation.Y)
-								str += "PLAYER_2 C_X " + fmt.Sprintf("%f\n", s.Player2.Shape.C.Translation.X)
-								str += "PLAYER_2 C_Y " + fmt.Sprintf("%f\n", s.Player2.Shape.C.Translation.Y)
-								str += "PLAYER_2 G_X " + fmt.Sprintf("%f\n", s.Player2.Shape.G.Translation.X)
-								str += "PLAYER_2 G_Y " + fmt.Sprintf("%f\n", s.Player2.Shape.G.Translation.Y)
+							for _, player := range s.Players {
+								str += fmt.Sprintf("PLAYER %d DIRECTION_X %f\n", player.ID, player.Shape.Direction.X)
+								str += fmt.Sprintf("PLAYER %d DIRECTION_Y %f\n", player.ID, player.Shape.Direction.Y)
+								str += fmt.Sprintf("PLAYER %d INERTIE_X %f\n", player.ID, player.Shape.Inertie.X)
+								str += fmt.Sprintf("PLAYER %d INERTIE_Y %f\n", player.ID, player.Shape.Inertie.Y)
+								str += fmt.Sprintf("PLAYER %d A_X %f\n", player.ID, player.Shape.A.Translation.X)
+								str += fmt.Sprintf("PLAYER %d A_Y %f\n", player.ID, player.Shape.A.Translation.Y)
+								str += fmt.Sprintf("PLAYER %d B_X %f\n", player.ID, player.Shape.B.Translation.X)
+								str += fmt.Sprintf("PLAYER %d B_Y %f\n", player.ID, player.Shape.B.Translation.Y)
+								str += fmt.Sprintf("PLAYER %d C_X %f\n", player.ID, player.Shape.C.Translation.X)
+								str += fmt.Sprintf("PLAYER %d C_Y %f\n", player.ID, player.Shape.C.Translation.Y)
+								str += fmt.Sprintf("PLAYER %d G_X %f\n", player.ID, player.Shape.G.Translation.X)
+								str += fmt.Sprintf("PLAYER %d G_Y %f\n", player.ID, player.Shape.G.Translation.Y)
 							}
 							_, err = pc.WriteTo([]byte(str), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 DIRECTION_X="+fmt.Sprintf("%f", s.Player1.Shape.Direction.X)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 DIRECTION_Y="+fmt.Sprintf("%f", s.Player1.Shape.Direction.Y)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 INERTIE_X="+fmt.Sprintf("%f", s.Player1.Shape.Inertie.X)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 INERTIE_Y="+fmt.Sprintf("%f", s.Player1.Shape.Inertie.Y)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 A_X="+fmt.Sprintf("%f", s.Player1.Shape.A.Translation.X)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 A_Y="+fmt.Sprintf("%f", s.Player1.Shape.A.Translation.Y)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 B_X="+fmt.Sprintf("%f", s.Player1.Shape.B.Translation.X)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 B_Y="+fmt.Sprintf("%f", s.Player1.Shape.B.Translation.Y)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 C_X="+fmt.Sprintf("%f", s.Player1.Shape.C.Translation.X)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 C_Y="+fmt.Sprintf("%f", s.Player1.Shape.C.Translation.Y)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 G_X="+fmt.Sprintf("%f", s.Player1.Shape.G.Translation.X)), addr)
-							//_, err = pc.WriteTo([]byte("PLAYER_1 G_Y="+fmt.Sprintf("%f", s.Player1.Shape.G.Translation.Y)), addr)
-							//
-							//if s.Player2 != nil {
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 DIRECTION_X="+fmt.Sprintf("%f", s.Player2.Shape.Direction.X)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 DIRECTION_Y="+fmt.Sprintf("%f", s.Player2.Shape.Direction.Y)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 INERTIE_X="+fmt.Sprintf("%f", s.Player2.Shape.Inertie.X)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 INERTIE_Y="+fmt.Sprintf("%f", s.Player2.Shape.Inertie.Y)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 A_X="+fmt.Sprintf("%f", s.Player2.Shape.A.Translation.X)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 A_Y="+fmt.Sprintf("%f", s.Player2.Shape.A.Translation.Y)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 B_X="+fmt.Sprintf("%f", s.Player2.Shape.B.Translation.X)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 B_Y="+fmt.Sprintf("%f", s.Player2.Shape.B.Translation.Y)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 C_X="+fmt.Sprintf("%f", s.Player2.Shape.C.Translation.X)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 C_Y="+fmt.Sprintf("%f", s.Player2.Shape.C.Translation.Y)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 G_X="+fmt.Sprintf("%f", s.Player2.Shape.G.Translation.X)), addr)
-							//	_, err = pc.WriteTo([]byte("PLAYER_2 G_Y="+fmt.Sprintf("%f", s.Player2.Shape.G.Translation.Y)), addr)
-							//}
 						}
 					}
 				}()
@@ -167,38 +130,36 @@ func server(ctx context.Context) (err error) {
 			if strings.HasPrefix(data, "CONNECT") {
 				fmt.Println("[" + data + "]")
 
-				var player models.PlayerConf
-				player.Conf = &c
+				var playerConf models.PlayerConf
+				playerConf.Conf = &c
 				strs := strings.Split(data, " ")
 				for i, str := range strs {
 					if i == 0 {
 						continue
 					}
 					if i == 1 {
-						player.Name = str
+						playerConf.Name = str
 					}
 					if i == 2 {
-						player.Position.X, _ = strconv.ParseFloat(str, 64)
+						playerConf.Position.X, _ = strconv.ParseFloat(str, 64)
 					}
 					if i == 3 {
-						player.Position.Y, _ = strconv.ParseFloat(str, 64)
+						playerConf.Position.Y, _ = strconv.ParseFloat(str, 64)
 					}
 				}
-				if len(player.Name) > 0 {
-					if s.Player1 == nil {
-						s.AddPlayer1(player)
-						connexion.Player = s.Player1
-						fmt.Println("ADD Player 1", s.Player1.Name)
-						syncAddPlayer(connexions, s.Player1)
-						connexion.SetID(s.Player1)
-					} else if s.Player2 == nil {
-						s.AddPlayer2(player)
-						connexion.Player = s.Player2
-						fmt.Println("ADD Player 2", s.Player2.Name)
-						syncAddPlayer(connexions, s.Player2)
-						syncAddPlayer(connexions, s.Player1)
-						connexion.SetID(s.Player2)
+				if len(playerConf.Name) > 0 {
+					playerConf.Color.R = getRandomFloat(0, 1)
+					playerConf.Color.G = getRandomFloat(0, 1)
+					playerConf.Color.B = getRandomFloat(0, 1)
+
+					player := s.AddPlayer(playerConf, playerID)
+					connexion.Player = player
+					connexion.SetID(player)
+					for _, player := range s.Players {
+						syncAddPlayer(connexions, player)
 					}
+
+					playerID++
 				}
 			}
 			if strings.HasPrefix(data, "INPUT") {
@@ -217,56 +178,42 @@ func server(ctx context.Context) (err error) {
 						input = str
 					}
 				}
-				if userID == "1" && s.Player1 != nil {
-					switch input {
-					case "Left":
-						s.Player1.Rotate(0.05)
-						syncLeftPlayer(connexions, s.Player1)
-						fmt.Println("Rotate", s.Player1.Shape.Direction)
-					case "Right":
-						s.Player1.Rotate(-0.05)
-						syncRightPlayer(connexions, s.Player1)
-						fmt.Println("Rotate", s.Player1.Shape.Direction)
-					case "Shoot":
-						bullet := s.Player1.Shoot()
-						s.AddBullet(bullet)
-						syncShootPlayer(connexions, s.Player1)
-						fmt.Println("Shoot")
-					case "GazOn":
-						s.Player1.Gaz(true)
-						syncGazOnPlayer(connexions, s.Player1)
-						fmt.Println("Gaz On")
-					case "GazOff":
-						s.Player1.Gaz(false)
-						syncGazOffPlayer(connexions, s.Player1)
-						fmt.Println("Gaz Off")
-					default:
-					}
+				id, err := strconv.Atoi(userID)
+				if err != nil {
+					fmt.Println(err)
+					continue
 				}
-				if userID == "2" && s.Player2 != nil {
-					switch input {
-					case "Left":
-						s.Player2.Rotate(0.05)
-						syncLeftPlayer(connexions, s.Player2)
-						fmt.Println("Rotate", s.Player2.Shape.Direction)
-					case "Right":
-						s.Player2.Rotate(-0.05)
-						syncRightPlayer(connexions, s.Player2)
-						fmt.Println("Rotate", s.Player2.Shape.Direction)
-					case "Shoot":
-						bullet := s.Player2.Shoot()
-						s.AddBullet(bullet)
-						syncShootPlayer(connexions, s.Player2)
-						fmt.Println("Shoot")
-					case "GazOn":
-						s.Player2.Gaz(true)
-						syncGazOnPlayer(connexions, s.Player2)
-						fmt.Println("Gaz On")
-					case "GazOff":
-						s.Player2.Gaz(false)
-						syncGazOffPlayer(connexions, s.Player2)
-						fmt.Println("Gaz Off")
-					}
+				player, exist := s.Players[id]
+				if !exist {
+					continue
+				}
+				switch input {
+				case "Left":
+					player.Rotate(0.05)
+					syncLeftPlayer(connexions, player)
+					fmt.Println("Rotate", player.Shape.Direction)
+				case "Right":
+					player.Rotate(-0.05)
+					syncRightPlayer(connexions, player)
+					fmt.Println("Rotate", player.Shape.Direction)
+				case "Shoot":
+					bullet := player.Shoot()
+					s.AddBullet(bullet)
+					syncShootPlayer(connexions, player)
+					fmt.Println("Shoot")
+				case "GazOn":
+					player.Gaz(true)
+					syncGazOnPlayer(connexions, player)
+					fmt.Println("Gaz On")
+				case "GazOff":
+					player.Gaz(false)
+					syncGazOffPlayer(connexions, player)
+					fmt.Println("Gaz Off")
+				case "Exit":
+					s.RemovePlayer(player)
+					syncExitPlayer(connexions, player)
+					fmt.Println("Exit")
+				default:
 				}
 			}
 
@@ -313,6 +260,10 @@ func server(ctx context.Context) (err error) {
 	return
 }
 
+func getRandomFloat(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
+}
+
 func syncAddPlayer(connexions map[string]*Connexion, player *models.Player) {
 	for _, connexion := range connexions {
 		if connexion.Player != nil && connexion.Player != player {
@@ -333,6 +284,14 @@ func syncGazOffPlayer(connexions map[string]*Connexion, player *models.Player) {
 	for _, connexion := range connexions {
 		if connexion.Player != nil && connexion.Player != player {
 			connexion.GazOffPlayer(player)
+		}
+	}
+}
+
+func syncExitPlayer(connexions map[string]*Connexion, player *models.Player) {
+	for _, connexion := range connexions {
+		if connexion.Player != nil && connexion.Player != player {
+			connexion.ExitPlayer(player)
 		}
 	}
 }
@@ -362,49 +321,56 @@ func syncShootPlayer(connexions map[string]*Connexion, player *models.Player) {
 }
 
 func (c Connexion) SetID(player *models.Player) {
-	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("ID %d", player.ID)), c.Addr)
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("ID %d %s %f %f %f", player.ID, player.Name, player.Color.R, player.Color.G, player.Color.B)), c.Addr)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (c Connexion) AddPlayer(player *models.Player) {
-	_, err := c.Pc.WriteTo([]byte("NEW_PLAYER "+player.Name), c.Addr)
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("NEW_PLAYER %d %s %f %f %f", player.ID, player.Name, player.Color.R, player.Color.G, player.Color.B)), c.Addr)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (c Connexion) GazOnPlayer(player *models.Player) {
-	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER_%d GAZ_ON", player.ID)), c.Addr)
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER %d GAZ_ON", player.ID)), c.Addr)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (c Connexion) GazOffPlayer(player *models.Player) {
-	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER_%d GAZ_OFF", player.ID)), c.Addr)
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER %d GAZ_OFF", player.ID)), c.Addr)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (c Connexion) ExitPlayer(player *models.Player) {
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER %d EXIT", player.ID)), c.Addr)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (c Connexion) GazLeftPlayer(player *models.Player) {
-	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER_%d LEFT", player.ID)), c.Addr)
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER %d LEFT", player.ID)), c.Addr)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (c Connexion) GazRightPlayer(player *models.Player) {
-	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER_%d RIGHT", player.ID)), c.Addr)
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER %d RIGHT", player.ID)), c.Addr)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func (c Connexion) ShootPlayer(player *models.Player) {
-	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER_%d SHOOT", player.ID)), c.Addr)
+	_, err := c.Pc.WriteTo([]byte(fmt.Sprintf("PLAYER %d SHOOT", player.ID)), c.Addr)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -54,17 +54,6 @@ func run() {
 
 	input <- "CONNECT Lambert 400 400"
 
-	s.AddPlayer1(models.PlayerConf{
-		Name: "Lambert",
-		Position: pixel.Vec{
-			X: c.MaxX / 2,
-			Y: c.MaxY / 2,
-		},
-		Color: pixel.RGB(1, 0, 0),
-		Conf:  &c,
-	})
-	s.AddUIPlayer1()
-
 	last := time.Now()
 	for !win.Closed() {
 		last = time.Now()
@@ -78,6 +67,7 @@ func run() {
 		dt := time.Since(last)
 		time.Sleep(time.Second/60 - dt)
 	}
+	input <- fmt.Sprintf("INPUT %d Exit", s.ID)
 }
 
 func watchInput(input chan string, s *scenes.Scene, address string) {
@@ -146,7 +136,7 @@ func client(ctx context.Context, address string, reader io.Reader, input chan st
 				return
 			}
 			allDatas := string(buffer[:nRead])
-			fmt.Printf("data size: %d / %d\n", len(allDatas), conf.MaxBufferSize)
+			//fmt.Printf("data size: %d / %d\n", len(allDatas), conf.MaxBufferSize)
 
 			datas := strings.Split(allDatas, "\n")
 
@@ -186,88 +176,136 @@ func parseData(s *scenes.Scene, data string) {
 	prefix := getPrefix(data)
 	switch prefix {
 	case "ID":
-		s.ID = getStringAt(data, 1)
+		fmt.Println(data)
+		value, err := getIntAt(data, 1)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		name := getStringAt(data, 2)
+
+		r, err := getFloatAt(data, 3)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		g, err := getFloatAt(data, 4)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		b, err := getFloatAt(data, 5)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		s.ID = value
+		s.AddPlayer(models.PlayerConf{
+			Name: name,
+			Position: pixel.Vec{
+				X: s.Conf.MaxX / 2,
+				Y: s.Conf.MaxY / 2,
+			},
+			Color: pixel.RGB(r, g, b),
+			Conf:  s.Conf,
+		}, s.ID)
+		s.AddUIPlayer(s.ID)
 	case "NEW_PLAYER":
+		fmt.Println(data)
 		addPlayer(s, data)
-	case "PLAYER_1":
-		refreshPlayer(s, s.Player1, data)
-	case "PLAYER_2":
-		refreshPlayer(s, s.Player2, data)
+	case "PLAYER":
+		value, err := getIntAt(data, 1)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		player, exist := s.Players[value]
+		if !exist {
+			return
+		}
+		refreshPlayer(s, player, data)
 	}
 }
 
 func refreshPlayer(s *scenes.Scene, player *models.Player, data string) {
-	str := getStringAt(data, 1)
-
+	str := getStringAt(data, 2)
 	switch str {
+	case "EXIT":
+		s.RemovePlayer(player)
 	case "GAZ_ON":
+		fmt.Println(data)
 		player.Gaz(true)
 	case "GAZ_OFF":
+		fmt.Println(data)
 		player.Gaz(false)
 	case "LEFT":
+		fmt.Println(data)
 		player.Rotate(.05)
 	case "RIGHT":
+		fmt.Println(data)
 		player.Rotate(-.05)
 	case "SHOOT":
+		fmt.Println(data)
 		bullet := player.Shoot()
 		s.AddBullet(bullet)
 	case "DIRECTION_X":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.Direction.X = value
 		}
 	case "DIRECTION_Y":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.Direction.Y = value
 		}
 	case "INERTIE_X":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.Inertie.X = value
 		}
 	case "INERTIE_Y":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.Inertie.Y = value
 		}
 	case "A_X":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.A.Translation.X = value
 		}
 	case "A_Y":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.A.Translation.Y = value
 		}
 	case "B_X":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.B.Translation.X = value
 		}
 	case "B_Y":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.B.Translation.Y = value
 		}
 	case "C_X":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.C.Translation.X = value
 		}
 	case "C_Y":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.C.Translation.Y = value
 		}
 	case "G_X":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.G.Translation.X = value
 		}
 	case "G_Y":
-		value, err := getFloatAt(data, 2)
+		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.G.Translation.Y = value
 		}
@@ -279,19 +317,36 @@ func addPlayer(s *scenes.Scene, data string) {
 	var playerConf models.PlayerConf
 	playerConf.Position.X = s.Conf.MaxX / 2
 	playerConf.Position.Y = s.Conf.MaxY / 2
-	playerConf.Color = pixel.RGB(0, 1, 0)
-	strs := strings.Split(data, " ")
-	for i, str := range strs {
-		if i == 0 {
-			continue
-		}
-		if i == 1 {
-			playerConf.Name = str
-		}
+
+	id, err := getIntAt(data, 1)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+	name := getStringAt(data, 2)
+
+	r, err := getFloatAt(data, 3)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	g, err := getFloatAt(data, 4)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	b, err := getFloatAt(data, 5)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	playerConf.Color = pixel.RGB(r, g, b)
+
+	playerConf.Name = name
 	playerConf.Conf = s.Conf
-	s.AddPlayer2(playerConf)
-	s.AddUIPlayer2()
+	s.AddPlayer(playerConf, id)
+	s.AddUIPlayer(id)
 }
 
 func getPrefix(str string) string {
@@ -306,6 +361,16 @@ func getStringAt(str string, index int) string {
 		}
 	}
 	return ""
+}
+
+func getIntAt(str string, index int) (int, error) {
+	strs := strings.Split(str, " ")
+	for i, str := range strs {
+		if i == index {
+			return strconv.Atoi(str)
+		}
+	}
+	return 0, errors.New("value not found")
 }
 
 func getFloatAt(str string, index int) (float64, error) {
