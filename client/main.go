@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lambher/blop"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/lambher/fireblast/conf"
@@ -25,6 +27,8 @@ func main() {
 
 func run() {
 	var c conf.Conf
+
+	loadSound()
 
 	err := gonfig.GetConf("./conf.json", &c)
 	if err != nil {
@@ -68,6 +72,17 @@ func run() {
 		time.Sleep(time.Second/60 - dt)
 	}
 	input <- fmt.Sprintf("INPUT %d Exit", s.ID)
+}
+
+func loadSound() {
+	err := blop.LoadSound("hit", "assets/sounds/hit.mp3")
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = blop.LoadSound("shot", "assets/sounds/shot.mp3")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func watchInput(input chan string, s *scenes.Scene, address string) {
@@ -156,7 +171,6 @@ func client(ctx context.Context, address string, reader io.Reader, input chan st
 				_, err := conn.Write([]byte(value))
 				if err != nil {
 					fmt.Println(err)
-					continue
 				}
 			}
 		}
@@ -259,54 +273,30 @@ func refreshPlayer(s *scenes.Scene, player *models.Player, data string) {
 		if err == nil {
 			player.Shape.Direction.Y = value
 		}
-	case "INERTIE_X":
+	case "VELOCITY_X":
 		value, err := getFloatAt(data, 3)
 		if err == nil {
-			player.Shape.Inertie.X = value
+			player.Shape.Velocity.X = value
 		}
-	case "INERTIE_Y":
+	case "VELOCITY_Y":
 		value, err := getFloatAt(data, 3)
 		if err == nil {
-			player.Shape.Inertie.Y = value
+			player.Shape.Velocity.Y = value
 		}
-	case "A_X":
+	case "TRANSLATION_X":
 		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.A.Translation.X = value
+			player.Shape.B.Translation.X = value
+			player.Shape.C.Translation.X = value
+			player.Shape.G.Translation.X = value
 		}
-	case "A_Y":
+	case "TRANSLATION_Y":
 		value, err := getFloatAt(data, 3)
 		if err == nil {
 			player.Shape.A.Translation.Y = value
-		}
-	case "B_X":
-		value, err := getFloatAt(data, 3)
-		if err == nil {
-			player.Shape.B.Translation.X = value
-		}
-	case "B_Y":
-		value, err := getFloatAt(data, 3)
-		if err == nil {
 			player.Shape.B.Translation.Y = value
-		}
-	case "C_X":
-		value, err := getFloatAt(data, 3)
-		if err == nil {
-			player.Shape.C.Translation.X = value
-		}
-	case "C_Y":
-		value, err := getFloatAt(data, 3)
-		if err == nil {
 			player.Shape.C.Translation.Y = value
-		}
-	case "G_X":
-		value, err := getFloatAt(data, 3)
-		if err == nil {
-			player.Shape.G.Translation.X = value
-		}
-	case "G_Y":
-		value, err := getFloatAt(data, 3)
-		if err == nil {
 			player.Shape.G.Translation.Y = value
 		}
 	}

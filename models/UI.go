@@ -54,7 +54,7 @@ func (u *UI) Update() {
 	}
 
 	u.GazGauge.Update(u.Player.GazTank)
-	u.HPGauge.Update(float64(u.Player.HP / 100))
+	u.HPGauge.Update(float64(u.Player.HP) / 100.)
 }
 
 func (u UI) IsDestroyed() bool {

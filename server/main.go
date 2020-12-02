@@ -32,6 +32,8 @@ type Connexion struct {
 	Pc     net.PacketConn
 }
 
+var playerID = 1
+
 // server wraps all the UDP echo server functionality.
 // ps.: the server is capable of answering to a single
 // client at a time.
@@ -65,7 +67,6 @@ func server(ctx context.Context) (err error) {
 	doneChan := make(chan error, 1)
 	//buffer := make([]byte, conf.MaxBufferSize)
 
-	playerID := 1
 	// Given that waiting for packets to arrive is blocking by nature and we want
 	// to be able of canceling such action if desired, we do that in a separate
 	// go routine.
@@ -88,7 +89,7 @@ func server(ctx context.Context) (err error) {
 				doneChan <- err
 				return
 			}
-			fmt.Println(string(buffer))
+			fmt.Println(addr.String())
 			ok := false
 			if connexion, ok = connexions[addr.String()]; !ok {
 				connexion = &Connexion{
@@ -97,31 +98,6 @@ func server(ctx context.Context) (err error) {
 					Pc:     pc,
 				}
 				connexions[addr.String()] = connexion
-				go func() {
-					ticker := time.NewTicker(1000 * time.Millisecond / 30)
-					for {
-						select {
-						case <-ticker.C:
-							str := ""
-
-							for _, player := range s.Players {
-								str += fmt.Sprintf("PLAYER %d DIRECTION_X %f\n", player.ID, player.Shape.Direction.X)
-								str += fmt.Sprintf("PLAYER %d DIRECTION_Y %f\n", player.ID, player.Shape.Direction.Y)
-								str += fmt.Sprintf("PLAYER %d INERTIE_X %f\n", player.ID, player.Shape.Inertie.X)
-								str += fmt.Sprintf("PLAYER %d INERTIE_Y %f\n", player.ID, player.Shape.Inertie.Y)
-								str += fmt.Sprintf("PLAYER %d A_X %f\n", player.ID, player.Shape.A.Translation.X)
-								str += fmt.Sprintf("PLAYER %d A_Y %f\n", player.ID, player.Shape.A.Translation.Y)
-								str += fmt.Sprintf("PLAYER %d B_X %f\n", player.ID, player.Shape.B.Translation.X)
-								str += fmt.Sprintf("PLAYER %d B_Y %f\n", player.ID, player.Shape.B.Translation.Y)
-								str += fmt.Sprintf("PLAYER %d C_X %f\n", player.ID, player.Shape.C.Translation.X)
-								str += fmt.Sprintf("PLAYER %d C_Y %f\n", player.ID, player.Shape.C.Translation.Y)
-								str += fmt.Sprintf("PLAYER %d G_X %f\n", player.ID, player.Shape.G.Translation.X)
-								str += fmt.Sprintf("PLAYER %d G_Y %f\n", player.ID, player.Shape.G.Translation.Y)
-							}
-							_, err = pc.WriteTo([]byte(str), addr)
-						}
-					}
-				}()
 			}
 
 			data := string(buffer[:n])
@@ -159,7 +135,7 @@ func server(ctx context.Context) (err error) {
 						syncAddPlayer(connexions, player)
 					}
 
-					playerID++
+					getNextPlayerID(&s)
 				}
 			}
 			if strings.HasPrefix(data, "INPUT") {
@@ -211,6 +187,7 @@ func server(ctx context.Context) (err error) {
 					fmt.Println("Gaz Off")
 				case "Exit":
 					s.RemovePlayer(player)
+					playerID = player.ID
 					syncExitPlayer(connexions, player)
 					fmt.Println("Exit")
 				default:
@@ -241,6 +218,36 @@ func server(ctx context.Context) (err error) {
 	}()
 
 	go func() {
+		ticker := time.NewTicker(1000 * time.Millisecond / 15)
+		fmt.Println("New Ticker")
+		for {
+			select {
+			case <-ticker.C:
+
+				for _, c := range connexions {
+					addr := c.Addr
+					str := ""
+
+					for _, connexion := range connexions {
+						player := connexion.Player
+						if player == nil {
+							continue
+						}
+						str += fmt.Sprintf("PLAYER %d DIRECTION_X %f\n", player.ID, player.Shape.Direction.X)
+						str += fmt.Sprintf("PLAYER %d DIRECTION_Y %f\n", player.ID, player.Shape.Direction.Y)
+						str += fmt.Sprintf("PLAYER %d VELOCITY_X %f\n", player.ID, player.Shape.Velocity.X)
+						str += fmt.Sprintf("PLAYER %d VELOCITY_Y %f\n", player.ID, player.Shape.Velocity.Y)
+						str += fmt.Sprintf("PLAYER %d TRANSLATION_X %f\n", player.ID, player.Shape.G.Translation.X)
+						str += fmt.Sprintf("PLAYER %d TRANSLATION_Y %f\n", player.ID, player.Shape.G.Translation.Y)
+					}
+					_, err = pc.WriteTo([]byte(str), addr)
+				}
+
+			}
+		}
+	}()
+
+	go func() {
 		last := time.Now()
 		for {
 			last = time.Now()
@@ -258,6 +265,15 @@ func server(ctx context.Context) (err error) {
 	}
 
 	return
+}
+
+func getNextPlayerID(s *scenes.Scene) {
+	for playerID < 5 {
+		playerID++
+		if _, exist := s.Players[playerID]; !exist {
+			break
+		}
+	}
 }
 
 func getRandomFloat(min, max float64) float64 {

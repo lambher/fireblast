@@ -17,7 +17,7 @@ type Triangle struct {
 	G Coordinate
 
 	Direction        pixel.Vec
-	Inertie          pixel.Vec
+	Velocity         pixel.Vec
 	DirectionInitial pixel.Vec
 }
 
@@ -46,9 +46,15 @@ func NewTriangle(player *Player) *Triangle {
 			},
 			Translation: player.Position.Position,
 		},
-		G:                Coordinate{},
+		G: Coordinate{
+			Position: pixel.Vec{
+				X: 0,
+				Y: 0,
+			},
+			Translation: player.Position.Position,
+		},
 		Direction:        pixel.Vec{X: 0, Y: 1},
-		Inertie:          pixel.Vec{X: 0, Y: 0},
+		Velocity:         pixel.Vec{X: 0, Y: 0},
 		DirectionInitial: pixel.Vec{X: 0, Y: 1},
 	}
 
@@ -65,7 +71,7 @@ func NewTriangle(player *Player) *Triangle {
 }
 
 func (t *Triangle) applyTranslation() {
-	t.Translate(t.Inertie)
+	t.Translate(t.Velocity)
 }
 
 func (t *Triangle) Translate(vec pixel.Vec) {
@@ -143,17 +149,17 @@ func (t *Triangle) Update() {
 	t.refreshCenter()
 	t.applyRotation()
 	t.checkLimit()
-	t.Inertie = t.Inertie.Scaled(0.99)
+	t.Velocity = t.Velocity.Scaled(0.99)
 }
 
 func (t *Triangle) Gaz() {
-	if t.Inertie.Eq(pixel.Vec{}) {
-		t.Inertie = t.Direction.Scaled(0.1)
+	if t.Velocity.Eq(pixel.Vec{}) {
+		t.Velocity = t.Direction.Scaled(0.2)
 	}
-	old := t.Inertie
-	t.Inertie = t.Inertie.Add(t.Direction.Scaled(0.1))
+	old := t.Velocity
+	t.Velocity = t.Velocity.Add(t.Direction.Scaled(0.2))
 
-	if t.Inertie.Len() >= 5 {
-		t.Inertie = old
+	if t.Velocity.Len() >= 5 {
+		t.Velocity = old
 	}
 }

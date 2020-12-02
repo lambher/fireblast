@@ -13,13 +13,15 @@ type Bullet struct {
 	destroyed bool
 	Color     pixel.RGBA
 	Position  *Coordinate
-	Inertie   pixel.Vec
+	Player    *Player
+	Velocity  pixel.Vec
 }
 
-func NewBullet(Conf *conf.Conf) *Bullet {
+func NewBullet(Conf *conf.Conf, player *Player) *Bullet {
 	bullet := Bullet{
-		Conf:  Conf,
-		Color: pixel.RGB(1, 1, 1),
+		Player: player,
+		Conf:   Conf,
+		Color:  pixel.RGB(1, 1, 1),
 	}
 	return &bullet
 }
@@ -29,12 +31,27 @@ func (b Bullet) Draw(win *pixelgl.Window) {
 
 	imd.Color = b.Color
 	imd.Push(b.Position.Position.Add(b.Position.Translation))
-	imd.Circle(1, 0)
+	imd.Circle(2, 0)
 	imd.Draw(win)
+	//
+	//hitBox := b.GetHitBox()
+	//
+	//imd.Color = pixel.RGB(1, 0, 0)
+	//imd.Push(b.Position.Position.Add(b.Position.Translation.Add(pixel.V(hitBox.Min.X, 0))))
+	//imd.Color = pixel.RGB(1, 0, 0)
+	//imd.Push(b.Position.Position.Add(b.Position.Translation.Add(pixel.V(0, hitBox.Min.Y))))
+	//imd.Color = pixel.RGB(0, 1, 0)
+	//imd.Push(b.Position.Position.Add(b.Position.Translation.Add(pixel.V(hitBox.Max.X, 0))))
+	//imd.Color = pixel.RGB(0, 1, 0)
+	//imd.Push(b.Position.Position.Add(b.Position.Translation.Add(pixel.V(0, hitBox.Max.Y))))
+	////imd.Color = pixel.RGB(0, 0, 1)
+	////imd.Push(pixel.V(500, 700))
+	//imd.Polygon(0)
+	//imd.Draw(win)
 }
 
 func (b *Bullet) applyTranslation() {
-	b.Translate(b.Inertie)
+	b.Translate(b.Velocity)
 }
 
 func (b *Bullet) Translate(vec pixel.Vec) {
@@ -47,8 +64,19 @@ func (b *Bullet) Update() {
 	}
 }
 
-func (p Bullet) Collides(element Element) bool {
-	return false
+func (p *Bullet) Hit(element Element) {
+
+}
+
+func (b Bullet) GetHitBox() pixel.Rect {
+	return pixel.Rect{
+		Min: b.Position.Position.Add(b.Position.Translation.Add(pixel.Vec{-2, -2})),
+		Max: b.Position.Position.Add(b.Position.Translation.Add(pixel.Vec{2, 2})),
+	}
+}
+
+func (b Bullet) Collides(element Element) bool {
+	return b.GetHitBox().Intersects(element.GetHitBox())
 }
 
 func (b *Bullet) Collision(elements []Element) {

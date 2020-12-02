@@ -7,6 +7,10 @@ type Coordinate struct {
 	Translation pixel.Vec
 }
 
+func (c Coordinate) GetPos() pixel.Vec {
+	return c.Position.Add(c.Translation)
+}
+
 func NewCoordinate(vec pixel.Vec) *Coordinate {
 	c := Coordinate{
 		Position: vec,
